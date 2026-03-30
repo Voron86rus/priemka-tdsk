@@ -1,0 +1,4 @@
+[
+    { "login": "admin", "password": "12345", "fullName": "Воронцов Евгений Олегович", "position": "Главный инженер", "role": "admin" },
+    { "login": "admin2", "password": "12345", "fullName": "Сидоров Андрей Петрович", "position": "Технический специалист", "role": "readonly" }
+]
