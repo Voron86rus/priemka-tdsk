@@ -1,0 +1,53 @@
+{
+    "sections": [
+        {
+            "id": "section_1",
+            "title": "🪨 Состояние плитки",
+            "questions": [
+                { "id": "q1", "text": "Сколы на плитке", "type": "checkbox", "value": "Сколы на плитке" },
+                { "id": "q2", "text": "Трещины на плитке", "type": "checkbox", "value": "Трещины на плитке" },
+                { "id": "q3", "text": "Отслоение плитки", "type": "checkbox", "value": "Отслоение плитки" },
+                { "id": "q4", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_2",
+            "title": "🧱 Состояние стен",
+            "questions": [
+                { "id": "q5", "text": "Трещины", "type": "checkbox", "value": "Трещины" },
+                { "id": "q6", "text": "Плесень", "type": "checkbox", "value": "Плесень" },
+                { "id": "q7", "text": "Отслоение краски", "type": "checkbox", "value": "Отслоение краски" },
+                { "id": "q8", "text": "Граффити/надписи", "type": "checkbox", "value": "Граффити/надписи" },
+                { "id": "q9", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_3",
+            "title": "💡 Освещение",
+            "questions": [
+                { "id": "q10", "text": "Всё работает", "type": "radio", "value": "Всё работает" },
+                { "id": "q11", "text": "Перегоревшие лампы", "type": "radio", "value": "Перегоревшие лампы" },
+                { "id": "q12", "text": "Не работает", "type": "radio", "value": "Не работает" }
+            ]
+        },
+        {
+            "id": "section_4",
+            "title": "🚪 Состояние входных дверей",
+            "questions": [
+                { "id": "q13", "text": "Не закрывается", "type": "checkbox", "value": "Не закрывается" },
+                { "id": "q14", "text": "Сломан замок", "type": "checkbox", "value": "Сломан замок" },
+                { "id": "q15", "text": "Скрипит", "type": "checkbox", "value": "Скрипит" },
+                { "id": "q16", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_5",
+            "title": "🗑️ Уборка и чистота",
+            "questions": [
+                { "id": "q17", "text": "Мусор на площадке", "type": "checkbox", "value": "Мусор на площадке" },
+                { "id": "q18", "text": "Запах", "type": "checkbox", "value": "Запах" },
+                { "id": "q19", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        }
+    ]
+}
