@@ -1,0 +1,52 @@
+{
+    "sections": [
+        {
+            "id": "section_1",
+            "title": "🪨 Состояние плитки",
+            "questions": [
+                { "id": "q1", "text": "Сколы на плитке", "type": "checkbox", "value": "Сколы на плитке" },
+                { "id": "q2", "text": "Трещины на плитке", "type": "checkbox", "value": "Трещины на плитке" },
+                { "id": "q3", "text": "Отслоение плитки", "type": "checkbox", "value": "Отслоение плитки" },
+                { "id": "q4", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_2",
+            "title": "🧱 Состояние стен",
+            "questions": [
+                { "id": "q5", "text": "Трещины", "type": "checkbox", "value": "Трещины" },
+                { "id": "q6", "text": "Плесень", "type": "checkbox", "value": "Плесень" },
+                { "id": "q7", "text": "Отслоение краски", "type": "checkbox", "value": "Отслоение краски" },
+                { "id": "q8", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_3",
+            "title": "💡 Освещение",
+            "questions": [
+                { "id": "q9", "text": "Всё работает", "type": "radio", "value": "Всё работает" },
+                { "id": "q10", "text": "Перегоревшие лампы", "type": "radio", "value": "Перегоревшие лампы" },
+                { "id": "q11", "text": "Не работает", "type": "radio", "value": "Не работает" }
+            ]
+        },
+        {
+            "id": "section_4",
+            "title": "🚰 Сантехника",
+            "questions": [
+                { "id": "q12", "text": "Подтекает кран", "type": "checkbox", "value": "Подтекает кран" },
+                { "id": "q13", "text": "Засор", "type": "checkbox", "value": "Засор" },
+                { "id": "q14", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_5",
+            "title": "🚪 Состояние дверей и окон",
+            "questions": [
+                { "id": "q15", "text": "Зазоры в дверях", "type": "checkbox", "value": "Зазоры в дверях" },
+                { "id": "q16", "text": "Сломанные ручки", "type": "checkbox", "value": "Сломанные ручки" },
+                { "id": "q17", "text": "Трещины в стеклах", "type": "checkbox", "value": "Трещины в стеклах" },
+                { "id": "q18", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        }
+    ]
+}
