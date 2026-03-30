@@ -1,0 +1,52 @@
+{
+    "sections": [
+        {
+            "id": "section_1",
+            "title": "🪨 Состояние пола",
+            "questions": [
+                { "id": "q1", "text": "Сколы бетона", "type": "checkbox", "value": "Сколы бетона" },
+                { "id": "q2", "text": "Трещины", "type": "checkbox", "value": "Трещины" },
+                { "id": "q3", "text": "Выбоины", "type": "checkbox", "value": "Выбоины" },
+                { "id": "q4", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_2",
+            "title": "🧱 Состояние стен",
+            "questions": [
+                { "id": "q5", "text": "Трещины", "type": "checkbox", "value": "Трещины" },
+                { "id": "q6", "text": "Плесень", "type": "checkbox", "value": "Плесень" },
+                { "id": "q7", "text": "Отслоение штукатурки", "type": "checkbox", "value": "Отслоение штукатурки" },
+                { "id": "q8", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_3",
+            "title": "💡 Освещение",
+            "questions": [
+                { "id": "q9", "text": "Всё работает", "type": "radio", "value": "Всё работает" },
+                { "id": "q10", "text": "Перегоревшие лампы", "type": "radio", "value": "Перегоревшие лампы" },
+                { "id": "q11", "text": "Не работает", "type": "radio", "value": "Не работает" }
+            ]
+        },
+        {
+            "id": "section_4",
+            "title": "🚰 Отопление и водоснабжение",
+            "questions": [
+                { "id": "q12", "text": "Подтекает радиатор", "type": "checkbox", "value": "Подтекает радиатор" },
+                { "id": "q13", "text": "Холодные батареи", "type": "checkbox", "value": "Холодные батареи" },
+                { "id": "q14", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_5",
+            "title": "🚪 Состояние дверей и окон",
+            "questions": [
+                { "id": "q15", "text": "Не закрываются", "type": "checkbox", "value": "Не закрываются" },
+                { "id": "q16", "text": "Сломанные замки", "type": "checkbox", "value": "Сломанные замки" },
+                { "id": "q17", "text": "Битые стекла", "type": "checkbox", "value": "Битые стекла" },
+                { "id": "q18", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        }
+    ]
+}
