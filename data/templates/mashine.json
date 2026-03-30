@@ -1,0 +1,41 @@
+{
+    "sections": [
+        {
+            "id": "section_1",
+            "title": "⚙️ Состояние оборудования",
+            "questions": [
+                { "id": "q1", "text": "Следы коррозии", "type": "checkbox", "value": "Следы коррозии" },
+                { "id": "q2", "text": "Масляные пятна", "type": "checkbox", "value": "Масляные пятна" },
+                { "id": "q3", "text": "Посторонний шум", "type": "checkbox", "value": "Посторонний шум" },
+                { "id": "q4", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_2",
+            "title": "📊 Приборы учета",
+            "questions": [
+                { "id": "q5", "text": "Повреждены", "type": "checkbox", "value": "Повреждены" },
+                { "id": "q6", "text": "Нет пломб", "type": "checkbox", "value": "Нет пломб" },
+                { "id": "q7", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_3",
+            "title": "💡 Освещение",
+            "questions": [
+                { "id": "q8", "text": "Всё работает", "type": "radio", "value": "Всё работает" },
+                { "id": "q9", "text": "Перегоревшие лампы", "type": "radio", "value": "Перегоревшие лампы" },
+                { "id": "q10", "text": "Не работает", "type": "radio", "value": "Не работает" }
+            ]
+        },
+        {
+            "id": "section_4",
+            "title": "🚪 Вентиляция и доступ",
+            "questions": [
+                { "id": "q11", "text": "Вентиляция не работает", "type": "checkbox", "value": "Вентиляция не работает" },
+                { "id": "q12", "text": "Дверь не закрывается", "type": "checkbox", "value": "Дверь не закрывается" },
+                { "id": "q13", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        }
+    ]
+}
