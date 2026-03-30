@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новый акт - Акт осмотра</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .step { display: none; }
+        .step.active { display: block; }
+        .template-selector {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+        .template-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            width: 200px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid #dee2e6;
+            transition: all 0.2s;
+        }
+        .template-card:hover {
+            transform: translateY(-5px);
+            border-color: #2e75b5;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .template-card.selected {
+            border-color: #2e75b5;
+            background: #e3f2fd;
+        }
+        .photo-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .photo-preview-item {
+            position: relative;
+        }
+        .photo-preview-item img {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .photo-preview-item button {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+        .photo-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .photo-area:hover {
+            border-color: #2e75b5;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card-header">
+            <h1 id="pageTitle">📋 НОВЫЙ АКТ ОСМОТРА</h1>
+            <p id="pageSubtitle">Выберите тип помещения</p>
+        </div>
+        <div class="card-content">
+            <!-- Шаг 1: Выбор шаблона -->
+            <div id="step1" class="step active">
+                <div class="template-selector" id="templateSelector"></div>
+                <button class="btn-secondary" onclick="backToLibrary()" style="margin-top: 20px; width: 100%;">← Вернуться в библиотеку</button>
+            </div>
+
+            <!-- Шаг 2: Форма осмотра -->
+            <div id="step2" class="step">
+                <button class="btn-back" onclick="goToStep1()">← Выбрать другой тип</button>
+                
+                <div class="section">
+                    <h3>📋 Основная информация</h3>
+                    <div class="info-row">
+                        <div class="info-field">
+                            <label>Ответственное лицо</label>
+                            <input type="text" id="inspectorName" readonly>
+                        </div>
+                        <div class="info-field">
+                            <label>Должность</label>
+                            <input type="text" id="inspectorPosition" readonly>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-field">
+                            <label>Объект</label>
+                            <input type="text" id="objectAddress" readonly>
+                        </div>
+                        <div class="info-field">
+                            <label>Подъезд <span class="required">*</span></label>
+                            <input type="text" id="entrance" placeholder="Например: 1, 2, подвал">
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-field">
+                            <label>Этаж <span class="required">*</span></label>
+                            <input type="text" id="floor" placeholder="Например: 1, 2, цоколь">
+                        </div>
+                        <div class="info-field">
+                            <label>Наименование помещения <span class="required">*</span></label>
+                            <input type="text" id="roomName" placeholder="Например: кабинет директора, склад №2">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dynamicForm"></div>
+
+                <div class="section">
+                    <h3>📸 Фото дефектов</h3>
+                    <div class="photo-area" id="photoArea">📷 Нажмите или перетащите фото</div>
+                    <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
+                    <div id="photoPreview" class="photo-preview"></div>
+                </div>
+
+                <div class="section">
+                    <h3>📝 Дополнительные замечания</h3>
+                    <textarea id="comments" rows="3" placeholder="Введите дополнительные замечания..."></textarea>
+                </div>
+
+                <button class="btn-primary" onclick="saveReport()" style="width: 100%;">💾 Сохранить акт</button>
+                <div id="saveMessage" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentObject = null;
+        let selectedTemplate = null;
+        let formTemplate = null;
+        let photos = [];
+
+        // Типы шаблонов
+        const TEMPLATE_TYPES = [
+            { id: "kvartira", name: "Квартира", icon: "🏠", description: "Осмотр жилого помещения" },
+            { id: "mop", name: "МОП", icon: "🚪", description: "Места общего пользования" },
+            { id: "electro", name: "Электрощитовая", icon: "⚡", description: "Электрощитовое помещение" },
+            { id: "mashine", name: "Машинное помещение", icon: "⚙️", description: "Машинное отделение" },
+            { id: "stairs", name: "Лестничная площадка", icon: "📐", description: "Лестничные марши и площадки" },
+            { id: "attic", name: "Чердак", icon: "🏚️", description: "Чердачное помещение" },
+            { id: "roof", name: "Кровля", icon: "🏠", description: "Кровля здания" },
+            { id: "nonresidential", name: "Нежилое помещение", icon: "🏢", description: "Нежилое/офисное помещение" }
+        ];
+
+        // Стандартный шаблон формы
+        const DEFAULT_TEMPLATE = {
+            sections: [
+                { id: "section_1", title: "🪨 Состояние плитки", questions: [
+                    { id: "q1", text: "Сколы на плитке", type: "checkbox", value: "Сколы на плитке" },
+                    { id: "q2", text: "Трещины на плитке", type: "checkbox", value: "Трещины на плитке" },
+                    { id: "q3", text: "Отслоение плитки", type: "checkbox", value: "Отслоение плитки" },
+                    { id: "q4", text: "Нет замечаний", type: "checkbox", value: "Нет замечаний" }
+                ] },
+                { id: "section_2", title: "🧱 Состояние стен", questions: [
+                    { id: "q5", text: "Трещины", type: "checkbox", value: "Трещины" },
+                    { id: "q6", text: "Плесень", type: "checkbox", value: "Плесень" },
+                    { id: "q7", text: "Отслоение краски", type: "checkbox", value: "Отслоение краски" },
+                    { id: "q8", text: "Нет замечаний", type: "checkbox", value: "Нет замечаний" }
+                ] },
+                { id: "section_3", title: "💡 Освещение", questions: [
+                    { id: "q9", text: "Всё работает", type: "radio", value: "Всё работает" },
+                    { id: "q10", text: "Перегоревшие лампы", type: "radio", value: "Перегоревшие лампы" },
+                    { id: "q11", text: "Не работает", type: "radio", value: "Не работает" }
+                ] },
+                { id: "section_4", title: "🚰 Сантехника", questions: [
+                    { id: "q12", text: "Подтекает кран", type: "checkbox", value: "Подтекает кран" },
+                    { id: "q13", text: "Засор", type: "checkbox", value: "Засор" },
+                    { id: "q14", text: "Нет замечаний", type: "checkbox", value: "Нет замечаний" }
+                ] }
+            ]
+        };
+
+        // Загрузка шаблона
+        async function loadTemplate(templateId) {
+            try {
+                const response = await fetch(`data/templates/${templateId}.json?v=${Date.now()}`);
+                if (response.ok) {
+                    formTemplate = await response.json();
+                } else {
+                    formTemplate = JSON.parse(JSON.stringify(DEFAULT_TEMPLATE));
+                }
+            } catch(e) {
+                formTemplate = JSON.parse(JSON.stringify(DEFAULT_TEMPLATE));
+            }
+            renderDynamicForm();
+        }
+
+        // Отображение выбора шаблона
+        function renderTemplateSelector() {
+            const container = document.getElementById('templateSelector');
+            container.innerHTML = TEMPLATE_TYPES.map(t => `
+                <div class="template-card" onclick="selectTemplate('${t.id}')">
+                    <h3>${t.icon} ${t.name}</h3>
+                    <p>${t.description}</p>
+                </div>
+            `).join('');
+        }
+
+        // Выбор шаблона
+        function selectTemplate(templateId) {
+            selectedTemplate = TEMPLATE_TYPES.find(t => t.id === templateId);
+            document.getElementById('pageSubtitle').innerHTML = `Форма: ${selectedTemplate.icon} ${selectedTemplate.name}`;
+            loadTemplate(templateId);
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+        }
+
+        function goToStep1() {
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('pageSubtitle').innerHTML = 'Выберите тип помещения';
+        }
+
+        function backToLibrary() {
+            window.location.href = 'library.html';
+        }
+
+        // Отображение динамической формы
+        function renderDynamicForm() {
+            const container = document.getElementById('dynamicForm');
+            if (!container || !formTemplate) return;
+            
+            let html = '';
+            formTemplate.sections.forEach((section, idx) => {
+                const inputType = section.questions[0]?.type || 'checkbox';
+                const groupClass = inputType === 'radio' ? 'radio-group' : 'checkbox-group';
+                html += `<div class="section">
+                    <h3>${section.title}</h3>
+                    <div class="${groupClass}" data-section="${idx}">
+                        ${section.questions.map(q => `
+                            <label>
+                                <input type="${q.type}" name="section_${idx}" value="${q.value}" class="dynamic-${q.type}" data-section="${idx}">
+                                ${q.text}
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // Получение данных из динамической формы
+        function getDynamicFormData() {
+            const result = {};
+            if (!formTemplate) return result;
+            formTemplate.sections.forEach((section, idx) => {
+                const data = [];
+                document.querySelectorAll(`.dynamic-checkbox[data-section="${idx}"]:checked`).forEach(cb => data.push(cb.value));
+                const radio = document.querySelector(`.dynamic-radio[data-section="${idx}"]:checked`);
+                if (radio) data.push(radio.value);
+                result[`section_${idx}`] = data.length ? data.join(', ') : 'Нет';
+            });
+            return result;
+        }
+
+        // Формирование HTML отчёта
+        function getReportHTML(roomName, entrance, floor) {
+            const inspector = document.getElementById('inspectorName').value;
+            const position = document.getElementById('inspectorPosition').value;
+            const address = document.getElementById('objectAddress').value;
+            const formData = getDynamicFormData();
+            
+            let sectionsHtml = '';
+            if (formTemplate?.sections) {
+                formTemplate.sections.forEach((section, idx) => {
+                    const value = formData[`section_${idx}`] || 'Нет';
+                    const isOk = value === 'Нет замечаний' || value.includes('Нет замечаний');
+                    sectionsHtml += `<div class="section"><div class="label">${section.title}:</div><p>${isOk ? '<span class="ok">✓ Нет замечаний</span>' : '<span class="defect">⚠️ ' + value + '</span>'}</p></div>`;
+                });
+            }
+            
+            const comments = document.getElementById('comments').value.trim() || '—';
+            const date = new Date().toLocaleString('ru-RU');
+            
+            let photosHtml = '';
+            if (photos.length) {
+                photosHtml = `<div style="page-break-before: always; margin-top:120px;">
+                    <h2 style="text-align:center;">📸 ФОТОФИКСАЦИЯ ДЕФЕКТОВ</h2>
+                    <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; margin-top:30px;">
+                        ${photos.map(src => `<img src="${src}" style="max-width:280px; margin:10px; border:2px solid #ddd; border-radius:8px;">`).join('')}
+                    </div>
+                </div>`;
+            }
+            
+            return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Акт осмотра - ${address}, ${roomName}</title>
+<style>
+    @page{size:A4;margin:20mm}
+    body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;line-height:1.5}
+    .company-info{text-align:center;margin-bottom:30px;border-bottom:2px solid #2e75b5;padding-bottom:15px}
+    .company-info h2{margin:0;color:#2c3e50}
+    h1{color:#2c3e50;text-align:center;margin:30px 0}
+    .details{background:#f8f9fa;padding:18px;border-radius:8px;margin-bottom:30px;border-left:4px solid #2e75b5}
+    .section{margin:25px 0;padding:18px;background:#f9f9f9;border-left:4px solid #2e75b5}
+    .label{font-weight:bold;color:#2c3e50}
+    .ok{color:#27ae60}
+    .defect{color:#e67e22}
+    .footer{margin-top:50px;font-size:9pt;color:#7f8c8d;text-align:center;border-top:1px solid #ddd;padding-top:20px}
+    img{max-width:100%}
+</style>
+</head>
+<body>
+    <div class="company-info">
+        <h2>ООО «ТехСтройКонтроль»</h2>
+        <p>ИНН 1234567890 / ОГРН 1234567890123</p>
+        <p>Лицензия на строительный контроль № Л-123-45678</p>
+    </div>
+    <h1>${selectedTemplate?.icon || '📋'} ${selectedTemplate?.name || 'АКТ ОСМОТРА'}</h1>
+    <div class="details">
+        <p><strong>Дата осмотра:</strong> ${date}</p>
+        <p><strong>Ответственное лицо:</strong> ${inspector}</p>
+        <p><strong>Должность:</strong> ${position}</p>
+        <p><strong>Адрес объекта:</strong> ${address}</p>
+        <p><strong>Подъезд:</strong> ${entrance}</p>
+        <p><strong>Этаж:</strong> ${floor}</p>
+        <p><strong>Наименование помещения:</strong> ${roomName}</p>
+    </div>
+    ${sectionsHtml}
+    <div class="section"><div class="label">📝 Дополнительные замечания:</div><p>${comments.replace(/\n/g,'<br>')}</p></div>
+    ${photosHtml}
+    <div class="footer"><p>© ООО «ТехСтройКонтроль», ${new Date().getFullYear()}</p></div>
+</body>
+</html>`;
+        }
+
+        // Сохранение акта
+        async function saveReport() {
+            const entrance = document.getElementById('entrance').value.trim();
+            const floor = document.getElementById('floor').value.trim();
+            const roomName = document.getElementById('roomName').value.trim();
+            
+            if (!entrance) { alert('Введите подъезд!'); return; }
+            if (!floor) { alert('Введите этаж!'); return; }
+            if (!roomName) { alert('Введите наименование помещения!'); return; }
+            
+            const reportId = `${currentObject}_${entrance}_${floor}_${roomName}_${Date.now()}`;
+            const htmlContent = getReportHTML(roomName, entrance, floor);
+            const now = new Date();
+            
+            const newReport = {
+                id: reportId,
+                roomName: roomName,
+                entrance: entrance,
+                floor: floor,
+                object: currentObject,
+                inspector: currentUser.fullName,
+                position: currentUser.position,
+                templateId: selectedTemplate.id,
+                templateIcon: selectedTemplate.icon,
+                date: now.toLocaleDateString('ru-RU'),
+                createdAt: now.toLocaleString('ru-RU'),
+                htmlContent: htmlContent
+            };
+            
+            // Загружаем существующие акты
+            let reports = [];
+            try {
+                const response = await fetch(`data/reports_${encodeURIComponent(currentObject)}.json?v=${Date.now()}`);
+                if (response.ok) reports = await response.json();
+            } catch(e) {}
+            
+            reports.push(newReport);
+            
+            // Сохраняем в localStorage (так как в GitHub Pages нельзя писать напрямую)
+            localStorage.setItem(`reports_${currentObject}`, JSON.stringify(reports));
+            
+            // Показываем сообщение
+            const msgDiv = document.getElementById('saveMessage');
+            msgDiv.textContent = '✅ Акт сохранён локально! Для синхронизации с облаком используйте кнопку "Синхронизировать
