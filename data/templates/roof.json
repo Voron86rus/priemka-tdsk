@@ -1,0 +1,41 @@
+{
+    "sections": [
+        {
+            "id": "section_1",
+            "title": "🏠 Состояние покрытия",
+            "questions": [
+                { "id": "q1", "text": "Вздутия", "type": "checkbox", "value": "Вздутия" },
+                { "id": "q2", "text": "Трещины", "type": "checkbox", "value": "Трещины" },
+                { "id": "q3", "text": "Отслоение", "type": "checkbox", "value": "Отслоение" },
+                { "id": "q4", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_2",
+            "title": "🌧️ Водоотвод",
+            "questions": [
+                { "id": "q5", "text": "Засор желоба", "type": "checkbox", "value": "Засор желоба" },
+                { "id": "q6", "text": "Повреждение труб", "type": "checkbox", "value": "Повреждение труб" },
+                { "id": "q7", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_3",
+            "title": "🔧 Примыкания",
+            "questions": [
+                { "id": "q8", "text": "Отслоение от парапета", "type": "checkbox", "value": "Отслоение от парапета" },
+                { "id": "q9", "text": "Разгерметизация", "type": "checkbox", "value": "Разгерметизация" },
+                { "id": "q10", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_4",
+            "title": "🪜 Безопасность",
+            "questions": [
+                { "id": "q11", "text": "Повреждены ограждения", "type": "checkbox", "value": "Повреждены ограждения" },
+                { "id": "q12", "text": "Нет доступа", "type": "checkbox", "value": "Нет доступа" },
+                { "id": "q13", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        }
+    ]
+}
