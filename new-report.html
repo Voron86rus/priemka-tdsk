@@ -392,4 +392,74 @@
             
             // Показываем сообщение
             const msgDiv = document.getElementById('saveMessage');
-            msgDiv.textContent = '✅ Акт сохранён локально! Для синхронизации с облаком используйте кнопку "Синхронизировать
+            msgDiv.textContent = '✅ Акт сохранён локально! Для синхронизации с облаком используйте кнопку "Синхронизировать" в библиотеке.';
+            msgDiv.className = 'message success';
+            
+            setTimeout(() => {
+                window.location.href = 'library.html';
+            }, 2000);
+        }
+
+        // Фото
+        const photoArea = document.getElementById('photoArea');
+        const photoInput = document.getElementById('photoInput');
+        const photoPreview = document.getElementById('photoPreview');
+        
+        if (photoArea) {
+            photoArea.onclick = () => photoInput.click();
+            photoArea.ondragover = (e) => e.preventDefault();
+            photoArea.ondrop = (e) => {
+                e.preventDefault();
+                handleFiles(e.dataTransfer.files);
+            };
+            photoInput.onchange = (e) => handleFiles(e.target.files);
+        }
+        
+        function handleFiles(files) {
+            for (let f of files) {
+                if (!f.type.startsWith('image/')) continue;
+                const r = new FileReader();
+                r.onload = (e) => {
+                    photos.push(e.target.result);
+                    updatePreview();
+                };
+                r.readAsDataURL(f);
+            }
+            photoInput.value = '';
+        }
+        
+        function updatePreview() {
+            if (!photoPreview) return;
+            photoPreview.innerHTML = '';
+            photos.forEach((src, i) => {
+                const div = document.createElement('div');
+                div.className = 'photo-preview-item';
+                div.innerHTML = `<img src="${src}"><button onclick="photos.splice(${i},1); updatePreview()">✖</button>`;
+                photoPreview.appendChild(div);
+            });
+        }
+
+        // Проверка авторизации
+        function checkAuth() {
+            const savedUser = sessionStorage.getItem('currentUser');
+            const savedObject = sessionStorage.getItem('currentObject');
+            if (!savedUser || !savedObject) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            currentUser = JSON.parse(savedUser);
+            currentObject = savedObject;
+            
+            document.getElementById('inspectorName').value = currentUser.fullName;
+            document.getElementById('inspectorPosition').value = currentUser.position;
+            document.getElementById('objectAddress').value = currentObject;
+            
+            return true;
+        }
+        
+        if (checkAuth()) {
+            renderTemplateSelector();
+        }
+    </script>
+</body>
+</html>
