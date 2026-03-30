@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Просмотр акта - Акт осмотра</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <style>
+        .report-viewer {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-height: 70vh;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card-header">
+            <h1>👁️ ПРОСМОТР АКТА</h1>
+            <p>Просмотр сохранённого отчёта</p>
+        </div>
+        <div class="card-content">
+            <button class="btn-back" onclick="backToLibrary()">← Вернуться в библиотеку</button>
+            <div id="reportViewer" class="report-viewer">
+                <div class="empty-library">Загрузка...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentObject = null;
+        let reports = [];
+
+        async function loadReports() {
+            try {
+                const response = await fetch(`data/reports_${encodeURIComponent(currentObject)}.json?v=${Date.now()}`);
+                if (response.ok) {
+                    reports = await response.json();
+                } else {
+                    reports = [];
+                }
+            } catch(e) {
+                reports = [];
+            }
+            
+            const reportId = sessionStorage.getItem('viewReportId');
+            const report = reports.find(r => r.id === reportId);
+            
+            if (report && report.htmlContent) {
+                document.getElementById('reportViewer').innerHTML = report.htmlContent;
+            } else {
+                document.getElementById('reportViewer').innerHTML = '<div class="empty-library">❌ Акт не найден</div>';
+            }
+        }
+
+        function backToLibrary() {
+            window.location.href = 'library.html';
+        }
+
+        function checkAuth() {
+            const savedUser = sessionStorage.getItem('currentUser');
+            const savedObject = sessionStorage.getItem('currentObject');
+            if (!savedUser || !savedObject) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            currentUser = JSON.parse(savedUser);
+            currentObject = savedObject;
+            return true;
+        }
+
+        if (checkAuth()) {
+            loadReports();
+        }
+    </script>
+</body>
+</html>
