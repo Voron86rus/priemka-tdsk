@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор объекта - Акт осмотра</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div class="container" style="max-width: 500px;">
+        <div class="card-header">
+            <h1>🏢 ВЫБОР ОБЪЕКТА</h1>
+            <p>Выберите объект для работы</p>
+        </div>
+        <div class="card-content">
+            <div class="form-group">
+                <label>Объект</label>
+                <select id="objectSelect">
+                    <option value="">-- Загрузка... --</option>
+                </select>
+            </div>
+            <button class="btn-primary" onclick="selectObject()" style="width: 100%;">Продолжить</button>
+            <button class="btn-secondary" onclick="logout()" style="margin-top: 10px; width: 100%;">← Выйти</button>
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let objectsList = [];
+
+        // Проверка авторизации
+        function checkAuth() {
+            const savedUser = sessionStorage.getItem('currentUser');
+            if (!savedUser) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            currentUser = JSON.parse(savedUser);
+            return true;
+        }
+
+        // Загрузка списка объектов
+        async function loadObjects() {
+            try {
+                const response = await fetch('data/objects.json?v=' + Date.now());
+                if (response.ok) {
+                    objectsList = await response.json();
+                } else {
+                    objectsList = ["ул. Ленина, д. 15", "пр. Мира, д. 42", "ул. Гагарина, д. 8"];
+                }
+            } catch(e) {
+                objectsList = ["ул. Ленина, д. 15", "пр. Мира, д. 42", "ул. Гагарина, д. 8"];
+            }
+            
+            const select = document.getElementById('objectSelect');
+            select.innerHTML = '<option value="">-- Выберите объект --</option>' + 
+                objectsList.map(obj => `<option value="${obj}">${obj}</option>`).join('');
+        }
+
+        function selectObject() {
+            const object = document.getElementById('objectSelect').value;
+            const messageDiv = document.getElementById('message');
+
+            if (!object) {
+                messageDiv.textContent = '❌ Выберите объект!';
+                messageDiv.className = 'message error';
+                return;
+            }
+
+            // Сохраняем выбранный объект
+            sessionStorage.setItem('currentObject', object);
+            
+            // Перенаправляем в библиотеку
+            window.location.href = 'library.html';
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        if (checkAuth()) {
+            loadObjects();
+        }
+    </script>
+</body>
+</html>
