@@ -1,0 +1,40 @@
+{
+    "sections": [
+        {
+            "id": "section_1",
+            "title": "🏚️ Состояние кровли",
+            "questions": [
+                { "id": "q1", "text": "Протечки", "type": "checkbox", "value": "Протечки" },
+                { "id": "q2", "text": "Трещины", "type": "checkbox", "value": "Трещины" },
+                { "id": "q3", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_2",
+            "title": "🪵 Состояние стропил",
+            "questions": [
+                { "id": "q4", "text": "Гниль", "type": "checkbox", "value": "Гниль" },
+                { "id": "q5", "text": "Следы насекомых", "type": "checkbox", "value": "Следы насекомых" },
+                { "id": "q6", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_3",
+            "title": "💡 Освещение",
+            "questions": [
+                { "id": "q7", "text": "Всё работает", "type": "radio", "value": "Всё работает" },
+                { "id": "q8", "text": "Перегоревшие лампы", "type": "radio", "value": "Перегоревшие лампы" },
+                { "id": "q9", "text": "Не работает", "type": "radio", "value": "Не работает" }
+            ]
+        },
+        {
+            "id": "section_4",
+            "title": "🐀 Наличие вредителей",
+            "questions": [
+                { "id": "q10", "text": "Грызуны", "type": "checkbox", "value": "Грызуны" },
+                { "id": "q11", "text": "Птицы", "type": "checkbox", "value": "Птицы" },
+                { "id": "q12", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        }
+    ]
+}
