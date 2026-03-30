@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель - Акт осмотра</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <style>
+        .admin-tabs {
+            display: flex;
+            gap: 5px;
+            background: #ecf0f1;
+            border-bottom: 2px solid #bdc3c7;
+            flex-wrap: wrap;
+        }
+        .admin-tab {
+            padding: 12px 25px;
+            cursor: pointer;
+            background: #ecf0f1;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .admin-tab.active {
+            background: white;
+            border-bottom: 3px solid #2e75b5;
+            color: #2e75b5;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px 0;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .objects-list, .users-list {
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .object-item, .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            border-bottom: 1px solid #eee;
+            background: #f9f9f9;
+        }
+        .add-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card-header">
+            <h1>⚙️ АДМИН-ПАНЕЛЬ</h1>
+            <p>Управление системой</p>
+        </div>
+        <div class="card-content">
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="switchTab('objects')">🏢 Объекты</button>
+                <button class="admin-tab" onclick="switchTab('users')">👥 Пользователи</button>
+                <button class="admin-tab" onclick="switchTab('splash')">🖼️ Заставка</button>
+            </div>
+            
+            <!-- Вкладка Объекты -->
+            <div id="objectsTab" class="tab-content active">
+                <div class="objects-list" id="objectsList"></div>
+                <div class="add-form">
+                    <h3>➕ Добавить новый объект</h3>
+                    <div class="form-row">
+                        <div class="form-group"><input type="text" id="newObjectName" placeholder="Название объекта"></div>
+                        <button class="btn-primary" onclick="addObject()">Добавить</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Вкладка Пользователи -->
+            <div id="usersTab" class="tab-content">
+                <div class="users-list" id="usersList"></div>
+                <div class="add-form">
+                    <h3>➕ Добавить нового пользователя</h3>
+                    <div class="form-row">
+                        <div class="form-group"><input type="text" id="newUserLogin" placeholder="Логин"></div>
+                        <div class="form-group"><input type="text" id="newUserPassword" placeholder="Пароль"></div>
+                        <div class="form-group"><input type="text" id="newUserFullName" placeholder="ФИО"></div>
+                        <div class="form-group"><input type="text" id="newUserPosition" placeholder="Должность"></div>
+                        <div class="form-group">
+                            <select id="newUserRole">
+                                <option value="admin">Администратор</option>
+                                <option value="readonly">Гость</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" onclick="addUser()">Добавить</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Вкладка Заставка -->
+            <div id="splashTab" class="tab-content">
+                <div class="section">
+                    <h3>🖼️ Изображение заставки</h3>
+                    <div class="form-group"><label>Ссылка на изображение (URL)</label><input type="text" id="splashUrl" placeholder="https://..."></div>
+                    <div class="form-group"><label>Время показа (секунды)</label><input type="number" id="splashDuration" min="1" max="30" step="1" value="5"></div>
+                    <button class="btn-primary" onclick="saveSplashSettings()">💾 Сохранить настройки</button>
+                    <div class="splash-preview" style="margin-top: 20px;"><p>Предпросмотр:</p><img id="splashPreviewImg" style="max-width:300px; max-height:200px; border:1px solid #ddd; border-radius:8px;" src=""></div>
+                </div>
+            </div>
+            
+            <div id="adminMessage" class="message"></div>
+            <button class="btn-logout" onclick="logout()" style="margin-top: 20px;">🚪 Выйти</button>
+        </div>
+    </div>
+
+    <script>
+        let objectsList = [];
+        let usersList = [];
+        let splashSettings = { url: "https://onetor.ru/uploads/posts/2020-09/1599195433_1599195344071.png", duration: 5 };
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tab + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function loadObjects() {
+            try {
+                const response = await fetch('data/objects.json?v=' + Date.now());
+                if (response.ok) objectsList = await response.json();
+                else objectsList = ["ул. Ленина, д. 15", "пр. Мира, д. 42", "ул. Гагарина, д. 8"];
+            } catch(e) {
+                objectsList = ["ул. Ленина, д. 15", "пр. Мира, д. 42", "ул. Гагарина, д. 8"];
+            }
+            renderObjectsList();
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('data/users.json?v=' + Date.now());
+                if (response.ok) usersList = await response.json();
+                else usersList = [
+                    { login: "admin", password: "12345", fullName: "Воронцов Евгений Олегович", position: "Главный инженер", role: "admin" },
+                    { login: "admin2", password: "12345", fullName: "Сидоров Андрей Петрович", position: "Технический специалист", role: "readonly" }
+                ];
+            } catch(e) {
+                usersList = [
+                    { login: "admin", password: "12345", fullName: "Воронцов Евгений Олегович", position: "Главный инженер", role: "admin" },
+                    { login: "admin2", password: "12345", fullName: "Сидоров Андрей Петрович", position: "Технический специалист", role: "readonly" }
+                ];
+            }
+            renderUsersList();
+        }
+
+        async function loadSplashSettings() {
+            try {
+                const response = await fetch('data/splash.json?v=' + Date.now());
+                if (response.ok) splashSettings = await response.json();
+            } catch(e) {}
+            document.getElementById('splashUrl').value = splashSettings.url;
+            document.getElementById('splashDuration').value = splashSettings.duration;
+            document.getElementById('splashPreviewImg').src = splashSettings.url;
+        }
+
+        async function saveSplashSettings() {
+            const url = document.getElementById('splashUrl').value.trim();
+            const duration = parseInt(document.getElementById('splashDuration').value) || 5;
+            splashSettings = { url, duration };
+            // Сохраняем в localStorage
+            localStorage.setItem('splash_settings', JSON.stringify(splashSettings));
+            document.getElementById('splashPreviewImg').src = url;
+            showMessage('✅ Настройки заставки сохранены локально!', 'success');
+        }
+
+        function renderObjectsList() {
+            const container = document.getElementById('objectsList');
+            if (objectsList.length === 0) {
+                container.innerHTML = '<div style="padding:20px;text-align:center;">Нет объектов</div>';
+                return;
+            }
+            container.innerHTML = objectsList.map(obj => `
+                <div class="object-item">
+                    <span>🏢 ${obj}</span>
+                    <button class="btn-danger btn-sm" onclick="deleteObject('${obj}')">🗑 Удалить</button>
+                </div>
+            `).join('');
+        }
+
+        function renderUsersList() {
+            const container = document.getElementById('usersList');
+            if (usersList.length === 0) {
+                container.innerHTML = '<div style="padding:20px;text-align:center;">Нет пользователей</div>';
+                return;
+            }
+            container.innerHTML = usersList.map(user => `
+                <div class="user-item">
+                    <div>
+                        <div><strong>${user.login}</strong> — ${user.fullName}</div>
+                        <div style="font-size:12px; color:#7f8c8d;">📌 ${user.position}</div>
+                    </div>
+                    <div>
+                        <span class="role-badge ${user.role === 'admin' ? '' : 'readonly'}">${user.role === 'admin' ? '🔑 Полные права' : '👁️ Только просмотр'}</span>
+                        ${user.login !== 'admin' ? `<button class="btn-warning btn-sm" onclick="editUser('${user.login}')">✏️</button><button class="btn-danger btn-sm" onclick="deleteUser('${user.login}')">🗑</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addObject() {
+            const newObject = document.getElementById('newObjectName').value.trim();
+            if (!newObject) { showMessage('Введите название!', 'error'); return; }
+            if (objectsList.includes(newObject)) { showMessage('Объект уже существует!', 'error'); return; }
+            objectsList.push(newObject);
+            localStorage.setItem('objects_backup', JSON.stringify(objectsList));
+            renderObjectsList();
+            showMessage('✅ Объект добавлен локально!', 'success');
+            document.getElementById('newObjectName').value = '';
+        }
+
+        function deleteObject(obj) {
+            if (confirm(`Удалить объект "${obj}"?`)) {
+                objectsList = objectsList.filter(o => o !== obj);
+                localStorage.setItem('objects_backup', JSON.stringify(objectsList));
+                renderObjectsList();
+                showMessage('✅ Объект удалён локально!', 'success');
+            }
+        }
+
+        function addUser() {
+            const login = document.getElementById('newUserLogin').value.trim();
+            const password = document.getElementById('newUserPassword').value.trim();
+            const fullName = document.getElementById('newUserFullName').value.trim();
+            const position = document.getElementById('newUserPosition').value.trim();
+            const role = document.getElementById('newUserRole').value;
+            if (!login || !password || !fullName || !position) { showMessage('Заполните все поля!', 'error'); return; }
+            if (usersList.find(u => u.login === login)) { showMessage('Пользователь уже существует!', 'error'); return; }
+            usersList.push({ login, password, fullName, position, role });
+            localStorage.setItem('users_backup', JSON.stringify(usersList));
+            renderUsersList();
+            showMessage('✅ Пользователь добавлен локально!', 'success');
+            ['newUserLogin', 'newUserPassword', 'newUserFullName', 'newUserPosition'].forEach(id => document.getElementById(id).value = '');
+        }
+
+        function deleteUser(login) {
+            if (login === 'admin') { showMessage('❌ Нельзя удалить главного администратора!', 'error'); return; }
+            if (confirm(`Удалить пользователя "${login}"?`)) {
+                usersList = usersList.filter(u => u.login !== login);
+                localStorage.setItem('users_backup', JSON.stringify(usersList));
+                renderUsersList();
+                showMessage('✅ Пользователь удалён локально!', 'success');
+            }
+        }
+
+        function editUser(login) {
+            const user = usersList.find(u => u.login === login);
+            if (!user) return;
+            const newFullName = prompt('ФИО:', user.fullName);
+            if (newFullName) user.fullName = newFullName;
+            const newPosition = prompt('Должность:', user.position);
+            if (newPosition) user.position = newPosition;
+            const newPassword = prompt('Новый пароль:', '');
+            if (newPassword) user.password = newPassword;
+            const newRole = confirm('Роль? OK - admin, Отмена - readonly') ? 'admin' : 'readonly';
+            user.role = newRole;
+            localStorage.setItem('users_backup', JSON.stringify(usersList));
+            renderUsersList();
+            showMessage('✅ Данные обновлены локально!', 'success');
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('adminMessage');
+            msg.textContent = text;
+            msg.className = `message ${type}`;
+            setTimeout(() => msg.style.display = 'none', 3000);
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        function checkAuth() {
+            const savedUser = sessionStorage.getItem('currentUser');
+            if (!savedUser) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            const user = JSON.parse(savedUser);
+            if (user.role !== 'admin' && user.role !== 'superadmin') {
+                alert('Нет доступа к админ-панели');
+                window.location.href = 'library.html';
+                return false;
+            }
+            return true;
+        }
+
+        if (checkAuth()) {
+            loadObjects();
+            loadUsers();
+            loadSplashSettings();
+        }
+    </script>
+</body>
+</html>
