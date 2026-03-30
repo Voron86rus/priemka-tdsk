@@ -1,0 +1,42 @@
+{
+    "sections": [
+        {
+            "id": "section_1",
+            "title": "🔌 Состояние электрощитов",
+            "questions": [
+                { "id": "q1", "text": "Повреждены дверцы", "type": "checkbox", "value": "Повреждены дверцы" },
+                { "id": "q2", "text": "Нет пломб", "type": "checkbox", "value": "Нет пломб" },
+                { "id": "q3", "text": "Следы возгорания", "type": "checkbox", "value": "Следы возгорания" },
+                { "id": "q4", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_2",
+            "title": "📦 Проводка и кабели",
+            "questions": [
+                { "id": "q5", "text": "Оголенные провода", "type": "checkbox", "value": "Оголенные провода" },
+                { "id": "q6", "text": "Кабели не закреплены", "type": "checkbox", "value": "Кабели не закреплены" },
+                { "id": "q7", "text": "Следы нагрева", "type": "checkbox", "value": "Следы нагрева" },
+                { "id": "q8", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        },
+        {
+            "id": "section_3",
+            "title": "💡 Освещение в щитовой",
+            "questions": [
+                { "id": "q9", "text": "Всё работает", "type": "radio", "value": "Всё работает" },
+                { "id": "q10", "text": "Перегоревшие лампы", "type": "radio", "value": "Перегоревшие лампы" },
+                { "id": "q11", "text": "Не работает", "type": "radio", "value": "Не работает" }
+            ]
+        },
+        {
+            "id": "section_4",
+            "title": "🚪 Состояние помещения",
+            "questions": [
+                { "id": "q12", "text": "Влажность", "type": "checkbox", "value": "Влажность" },
+                { "id": "q13", "text": "Посторонние предметы", "type": "checkbox", "value": "Посторонние предметы" },
+                { "id": "q14", "text": "Нет замечаний", "type": "checkbox", "value": "Нет замечаний" }
+            ]
+        }
+    ]
+}
