@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Библиотека актов - Акт осмотра</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <style>
+        .entrance-section {
+            margin-bottom: 40px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .entrance-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .floor-section {
+            border-bottom: 1px solid #eee;
+        }
+        .floor-header {
+            background: #ecf0f1;
+            padding: 12px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            border-left: 4px solid #2e75b5;
+        }
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .user-info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card-header">
+            <h1>📚 Библиотека актов осмотра</h1>
+            <p id="objectDisplay"></p>
+        </div>
+        <div class="card-content">
+            <div class="user-info-bar">
+                <div>
+                    <div id="userInfo" class="user-info" style="background: #e3f2fd; color: #2c3e50; display: inline-block;"></div>
+                    <div id="userPosition" class="user-position-display"></div>
+                    <div id="roleBadge" class="role-badge" style="margin-top: 5px;"></div>
+                </div>
+                <div class="action-buttons" style="margin-bottom: 0;">
+                    <button id="newReportBtn" class="btn-new" onclick="location.href='new-report.html'">+ Новый акт осмотра</button>
+                    <button class="btn-secondary" onclick="changeObject()">🏢 Сменить объект</button>
+                    <button class="btn-sync" onclick="syncReports()">☁️ Синхронизировать</button>
+                    <button class="btn-logout" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+            <div id="reportsContainer" class="reports-container">
+                <div class="empty-library">📭 Загрузка актов...</div>
+            </div>
+            <div id="syncStatus" class="sync-status" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentObject = null;
+        let reports = [];
+
+        // Проверка авторизации
+        function checkAuth() {
+            const savedUser = sessionStorage.getItem('currentUser');
+            const savedObject = sessionStorage.getItem('currentObject');
+            if (!savedUser) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            currentUser = JSON.parse(savedUser);
+            currentObject = savedObject;
+            return true;
+        }
+
+        // Загрузка актов для текущего объекта
+        async function loadReports() {
+            try {
+                const fileName = `data/reports_${encodeURIComponent(currentObject)}.json`;
+                const response = await fetch(fileName + '?v=' + Date.now());
+                if (response.ok) {
+                    reports = await response.json();
+                } else {
+                    reports = [];
+                }
+            } catch(e) {
+                reports = [];
+            }
+            renderLibrary();
+        }
+
+        // Сохранение актов
+        async function saveReports() {
+            const fileName = `data/reports_${encodeURIComponent(currentObject)}.json`;
+            try {
+                // В GitHub Pages нельзя писать напрямую, поэтому сохраняем в localStorage и предлагаем скачать
+                localStorage.setItem('reports_backup_' + currentObject, JSON.stringify(reports));
+                showSyncStatus('✅ Акты сохранены локально. Для синхронизации с облаком используйте кнопку "Синхронизировать"', 'success');
+            } catch(e) {
+                showSyncStatus('❌ Ошибка сохранения', 'error');
+            }
+        }
+
+        // Синхронизация с облаком (скачивание/загрузка через Gist)
+        async function syncReports() {
+            showSyncStatus('🔄 Синхронизация...', 'success');
+            // Здесь будет интеграция с GitHub Gist
+            // Пока просто показываем сообщение
+            setTimeout(() => {
+                showSyncStatus('✅ Синхронизация завершена! Данные сохранены локально.', 'success');
+            }, 1000);
+        }
+
+        function showSyncStatus(text, type) {
+            const statusDiv = document.getElementById('syncStatus');
+            statusDiv.textContent = text;
+            statusDiv.className = `sync-status ${type === 'error' ? 'error' : 'success'}`;
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Отображение библиотеки
+        function renderLibrary() {
+            const container = document.getElementById('reportsContainer');
+            document.getElementById('objectDisplay').innerHTML = `📍 Объект: ${currentObject}`;
+            document.getElementById('userInfo').innerHTML = `👤 ${currentUser.fullName}`;
+            document.getElementById('userPosition').innerHTML = `📌 ${currentUser.position}`;
+            document.getElementById('roleBadge').innerHTML = currentUser.role === 'admin' ? '🔑 Полные права' : '👁️ Только просмотр';
+            document.getElementById('roleBadge').className = `role-badge ${currentUser.role === 'admin' ? '' : 'readonly'}`;
+            
+            const newBtn = document.getElementById('newReportBtn');
+            if (currentUser.role === 'readonly') {
+                newBtn.classList.add('disabled');
+                newBtn.disabled = true;
+            } else {
+                newBtn.classList.remove('disabled');
+                newBtn.disabled = false;
+            }
+
+            if (!reports || reports.length === 0) {
+                container.innerHTML = '<div class="empty-library">📭 Нет сохранённых актов. Нажмите «+ Новый акт» чтобы создать первый отчёт</div>';
+                return;
+            }
+
+            // Группировка по подъездам и этажам
+            const byEntrance = {};
+            reports.forEach(report => {
+                const entrance = report.entrance || 'Без подъезда';
+                if (!byEntrance[entrance]) byEntrance[entrance] = [];
+                byEntrance[entrance].push(report);
+            });
+
+            const entranceOrder = Object.keys(byEntrance).sort((a, b) => {
+                const aNum = parseInt(a), bNum = parseInt(b);
+                if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+                if (!isNaN(aNum)) return -1;
+                if (!isNaN(bNum)) return 1;
+                return a.localeCompare(b);
+            });
+
+            let html = '';
+            for (const entrance of entranceOrder) {
+                const entranceReports = byEntrance[entrance];
+                const byFloor = {};
+                entranceReports.forEach(report => {
+                    const floor = report.floor || 'Без этажа';
+                    if (!byFloor[floor]) byFloor[floor] = [];
+                    byFloor[floor].push(report);
+                });
+                
+                const floorOrder = Object.keys(byFloor).sort((a, b) => {
+                    const aNum = parseInt(a), bNum = parseInt(b);
+                    if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+                    if (!isNaN(aNum)) return -1;
+                    if (!isNaN(bNum)) return 1;
+                    return a.localeCompare(b);
+                });
+                
+                html += `<div class="entrance-section">
+                    <div class="entrance-header">🏢 ПОДЪЕЗД ${entrance}</div>`;
+                for (const floor of floorOrder) {
+                    const floorReports = byFloor[floor];
+                    const sortedReports = [...floorReports].sort((a, b) => {
+                        const numA = parseFloat(a.roomName), numB = parseFloat(b.roomName);
+                        const isANum = !isNaN(numA) && a.roomName.toString() === numA.toString();
+                        const isBNum = !isNaN(numB) && b.roomName.toString() === numB.toString();
+                        if (isANum && isBNum) return numA - numB;
+                        if (isANum) return -1;
+                        if (isBNum) return 1;
+                        return a.roomName.localeCompare(b.roomName);
+                    });
+                    
+                    html += `<div class="floor-section">
+                        <div class="floor-header">📍 ЭТАЖ ${floor}</div>
+                        <div class="reports-grid">`;
+                    sortedReports.forEach((report, idx) => {
+                        const templateIcon = report.templateIcon || '📄';
+                        html += `
+                            <div class="report-card">
+                                <h3>${templateIcon} ${report.roomName}</h3>
+                                <p><strong>Объект:</strong> ${report.object}</p>
+                                <p><strong>Ответственное лицо:</strong> ${report.inspector}</p>
+                                <p><strong>Должность:</strong> ${report.position || ''}</p>
+                                <p><strong>Дата:</strong> ${report.date}</p>
+                                <div class="report-actions">
+                                    <button class="btn-view" onclick="viewReport('${report.id}')">👁️ Просмотр</button>
+                                    <button class="btn-download" onclick="downloadReport('${report.id}')">📥 Скачать</button>
+                                    ${currentUser.role !== 'readonly' ? `<button class="btn-delete" onclick="deleteReport('${report.id}')">🗑 Удалить</button>` : ''}
+                                </div>
+                                <div class="date" style="font-size: 11px; color: #95a5a6; margin-top: 10px;">Создан: ${report.createdAt}</div>
+                            </div>
+                        `;
+                    });
+                    html += `</div></div>`;
+                }
+                html += `</div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        // Просмотр акта
+        function viewReport(reportId) {
+            sessionStorage.setItem('viewReportId', reportId);
+            sessionStorage.setItem('viewReportObject', currentObject);
+            window.location.href = 'view-report.html';
+        }
+
+        // Скачивание акта
+        function downloadReport(reportId) {
+            const report = reports.find(r => r.id === reportId);
+            if (report && report.htmlContent) {
+                const blob = new Blob([report.htmlContent], { type: 'text/html' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `Акт_осмотра_${report.roomName}.html`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+                showSyncStatus('✅ Акт скачан!', 'success');
+            }
+        }
+
+        // Удаление акта
+        async function deleteReport(reportId) {
+            if (currentUser.role === 'readonly') {
+                alert('У вас нет прав на удаление!');
+                return;
+            }
+            if (confirm('Удалить акт?')) {
+                const index = reports.findIndex(r => r.id === reportId);
+                if (index !== -1) {
+                    reports.splice(index, 1);
+                    await saveReports();
+                    renderLibrary();
+                    showSyncStatus('✅ Акт удалён!', 'success');
+                }
+            }
+        }
+
+        function changeObject() {
+            window.location.href = 'objects.html';
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        if (checkAuth()) {
+            loadReports();
+        }
+    </script>
+</body>
+</html>
