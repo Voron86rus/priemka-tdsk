@@ -47,6 +47,46 @@
             background: #f8f9fa;
             border-radius: 12px;
         }
+        .report-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #2e75b5;
+            transition: transform 0.2s;
+        }
+        .report-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .report-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn-view {
+            background: #2e75b5;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-download {
+            background: #27ae60;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -65,14 +105,12 @@
                 <div class="action-buttons" style="margin-bottom: 0;">
                     <button id="newReportBtn" class="btn-new" onclick="location.href='new-report.html'">+ Новый акт осмотра</button>
                     <button class="btn-secondary" onclick="changeObject()">🏢 Сменить объект</button>
-                    <button class="btn-sync" onclick="syncReports()">☁️ Синхронизировать</button>
                     <button class="btn-logout" onclick="logout()">🚪 Выйти</button>
                 </div>
             </div>
             <div id="reportsContainer" class="reports-container">
                 <div class="empty-library">📭 Загрузка актов...</div>
             </div>
-            <div id="syncStatus" class="sync-status" style="margin-top: 15px;"></div>
         </div>
     </div>
 
@@ -85,7 +123,7 @@
         function checkAuth() {
             const savedUser = sessionStorage.getItem('currentUser');
             const savedObject = sessionStorage.getItem('currentObject');
-            if (!savedUser) {
+            if (!savedUser || !savedObject) {
                 window.location.href = 'index.html';
                 return false;
             }
@@ -94,13 +132,16 @@
             return true;
         }
 
-        // Загрузка актов для текущего объекта
+        // Загрузка списка актов из папки объекта
         async function loadReports() {
+            const objectFolder = encodeURIComponent(currentObject);
+            const indexPath = `objects/${objectFolder}/index.json?v=${Date.now()}`;
+            
             try {
-                const fileName = `data/reports_${encodeURIComponent(currentObject)}.json`;
-                const response = await fetch(fileName + '?v=' + Date.now());
+                const response = await fetch(indexPath);
                 if (response.ok) {
-                    reports = await response.json();
+                    const data = await response.json();
+                    reports = data.reports || [];
                 } else {
                     reports = [];
                 }
@@ -108,37 +149,6 @@
                 reports = [];
             }
             renderLibrary();
-        }
-
-        // Сохранение актов
-        async function saveReports() {
-            const fileName = `data/reports_${encodeURIComponent(currentObject)}.json`;
-            try {
-                // В GitHub Pages нельзя писать напрямую, поэтому сохраняем в localStorage и предлагаем скачать
-                localStorage.setItem('reports_backup_' + currentObject, JSON.stringify(reports));
-                showSyncStatus('✅ Акты сохранены локально. Для синхронизации с облаком используйте кнопку "Синхронизировать"', 'success');
-            } catch(e) {
-                showSyncStatus('❌ Ошибка сохранения', 'error');
-            }
-        }
-
-        // Синхронизация с облаком (скачивание/загрузка через Gist)
-        async function syncReports() {
-            showSyncStatus('🔄 Синхронизация...', 'success');
-            // Здесь будет интеграция с GitHub Gist
-            // Пока просто показываем сообщение
-            setTimeout(() => {
-                showSyncStatus('✅ Синхронизация завершена! Данные сохранены локально.', 'success');
-            }, 1000);
-        }
-
-        function showSyncStatus(text, type) {
-            const statusDiv = document.getElementById('syncStatus');
-            statusDiv.textContent = text;
-            statusDiv.className = `sync-status ${type === 'error' ? 'error' : 'success'}`;
-            setTimeout(() => {
-                statusDiv.style.display = 'none';
-            }, 3000);
         }
 
         // Отображение библиотеки
@@ -215,7 +225,7 @@
                     html += `<div class="floor-section">
                         <div class="floor-header">📍 ЭТАЖ ${floor}</div>
                         <div class="reports-grid">`;
-                    sortedReports.forEach((report, idx) => {
+                    sortedReports.forEach((report) => {
                         const templateIcon = report.templateIcon || '📄';
                         html += `
                             <div class="report-card">
@@ -225,9 +235,9 @@
                                 <p><strong>Должность:</strong> ${report.position || ''}</p>
                                 <p><strong>Дата:</strong> ${report.date}</p>
                                 <div class="report-actions">
-                                    <button class="btn-view" onclick="viewReport('${report.id}')">👁️ Просмотр</button>
-                                    <button class="btn-download" onclick="downloadReport('${report.id}')">📥 Скачать</button>
-                                    ${currentUser.role !== 'readonly' ? `<button class="btn-delete" onclick="deleteReport('${report.id}')">🗑 Удалить</button>` : ''}
+                                    <button class="btn-view" onclick="viewReport('${report.filename}')">👁️ Просмотр</button>
+                                    <button class="btn-download" onclick="downloadReport('${report.filename}')">📥 Скачать</button>
+                                    ${currentUser.role !== 'readonly' ? `<button class="btn-delete" onclick="deleteReport('${report.filename}')">🗑 Удалить</button>` : ''}
                                 </div>
                                 <div class="date" style="font-size: 11px; color: #95a5a6; margin-top: 10px;">Создан: ${report.createdAt}</div>
                             </div>
@@ -240,41 +250,52 @@
             container.innerHTML = html;
         }
 
-        // Просмотр акта
-        function viewReport(reportId) {
-            sessionStorage.setItem('viewReportId', reportId);
-            sessionStorage.setItem('viewReportObject', currentObject);
-            window.location.href = 'view-report.html';
+        // Просмотр акта (открываем HTML-файл)
+        function viewReport(filename) {
+            const objectFolder = encodeURIComponent(currentObject);
+            window.open(`objects/${objectFolder}/${filename}`, '_blank');
         }
 
         // Скачивание акта
-        function downloadReport(reportId) {
-            const report = reports.find(r => r.id === reportId);
-            if (report && report.htmlContent) {
-                const blob = new Blob([report.htmlContent], { type: 'text/html' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `Акт_осмотра_${report.roomName}.html`;
-                link.click();
-                URL.revokeObjectURL(link.href);
-                showSyncStatus('✅ Акт скачан!', 'success');
-            }
+        function downloadReport(filename) {
+            const objectFolder = encodeURIComponent(currentObject);
+            const link = document.createElement('a');
+            link.href = `objects/${objectFolder}/${filename}`;
+            link.download = filename;
+            link.click();
         }
 
         // Удаление акта
-        async function deleteReport(reportId) {
+        async function deleteReport(filename) {
             if (currentUser.role === 'readonly') {
                 alert('У вас нет прав на удаление!');
                 return;
             }
             if (confirm('Удалить акт?')) {
-                const index = reports.findIndex(r => r.id === reportId);
-                if (index !== -1) {
-                    reports.splice(index, 1);
-                    await saveReports();
-                    renderLibrary();
-                    showSyncStatus('✅ Акт удалён!', 'success');
-                }
+                const objectFolder = encodeURIComponent(currentObject);
+                const indexPath = `objects/${objectFolder}/index.json`;
+                
+                // Получаем текущий индекс
+                const response = await fetch(indexPath + '?v=' + Date.now());
+                const data = await response.json();
+                const updatedReports = data.reports.filter(r => r.filename !== filename);
+                
+                // Сохраняем обновлённый индекс
+                const indexContent = JSON.stringify({ reports: updatedReports, lastUpdate: new Date().toISOString() }, null, 2);
+                const blob = new Blob([indexContent], { type: 'application/json' });
+                const file = new File([blob], 'index.json', { type: 'application/json' });
+                
+                // Создаём ссылку для скачивания обновлённого index.json
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(blob);
+                downloadLink.download = 'index.json';
+                downloadLink.click();
+                URL.revokeObjectURL(downloadLink.href);
+                
+                alert('⚠️ Акт удалён локально. Чтобы завершить удаление, загрузите обновлённый index.json в папку объекта на GitHub.');
+                
+                // Перезагружаем страницу
+                location.reload();
             }
         }
 
